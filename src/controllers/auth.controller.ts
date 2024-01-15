@@ -8,27 +8,23 @@ import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../config";
 const login = expressAsyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(403).json({ message: "All fields are required" });
-    return;
+    throw new Error("All fields are required");
   }
   const user = await User.findOne({ email });
 
   if (!user) {
-    res.status(403).json({ message: "User does not exists" });
-    return;
+    throw new Error("User does not exists.");
   }
 
   const match = await user.comparePassword(password);
   if (!match) {
-    res.status(403).json({ message: "Email or password is wrong." });
-    return;
+    throw new Error("Email or password is wrong");
   }
   const accessToken = jwt.sign(
     {
       userInfo: {
         userId: user._id,
         email: user.email,
-        role : user.role
       },
     },
     ACCESS_TOKEN_SECRET as string,
@@ -56,8 +52,7 @@ const refresh = expressAsyncHandler(async (req: Request, res: Response) => {
   const cookies = req.cookies;
 
   if (!cookies?.jwt) {
-    res.status(401).json({ message: "Unauthorized jwt is absent" });
-    return;
+    throw new Error("Unauthorized jwt is absent");
   }
 
   const refreshToken = cookies.jwt;
@@ -67,14 +62,12 @@ const refresh = expressAsyncHandler(async (req: Request, res: Response) => {
     REFRESH_TOKEN_SECRET as string,
     async (err: any, decode: any) => {
       if (err) {
-        res.status(403).json({ message: "Forbidden ", err });
-        return;
+        throw new Error("Forbidden");
       }
       const user = await User.findOne({ email: decode.userInfo.email });
 
       if (!user) {
-        res.status(403).json({ message: "Forbidden user not found" });
-        return;
+        throw new Error("Forbidden user not found.");
       }
 
       const accessToken = jwt.sign(

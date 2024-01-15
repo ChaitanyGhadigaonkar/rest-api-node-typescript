@@ -8,7 +8,6 @@ declare global {
       user: {
         userId: string;
         email: string;
-        role: string;
       };
     }
   }
@@ -19,18 +18,20 @@ export default function (req: Request, res: Response, next: NextFunction) {
     req.headers.authorization || req.headers.Authorization;
 
   if (!(authHeader as string)?.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Unauthorized" });
+    res.status(403);
+    throw new Error("Unauthorized");
   }
 
   const token = (authHeader as string).split(" ")[1];
 
   jwt.verify(token, ACCESS_TOKEN_SECRET as string, (err, decoded: any) => {
-    if (err) return res.status(403).json({ message: "Forbidden" });
+    if (err) {
+      throw new Error("Forbidden");
+    }
 
     req.user = {
       userId: decoded.userInfo.userId,
       email: decoded.userInfo.email,
-      role: decoded.userInfo.role,
     };
 
     next();

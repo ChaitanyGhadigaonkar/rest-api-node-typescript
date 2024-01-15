@@ -6,15 +6,9 @@ export interface UserDocument extends mongoose.Document {
   username: string;
   email: string;
   password: string;
-  role: string;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<Boolean>;
-}
-
-enum ROLE {
-  ADMIN = "admin",
-  USER = "user",
 }
 
 const userSchema = new mongoose.Schema(
@@ -22,7 +16,6 @@ const userSchema = new mongoose.Schema(
     username: {
       type: String,
       require: [true, "username is required"],
-      unique: true,
     },
     email: {
       type: String,
@@ -32,11 +25,6 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       require: [true, "password is required"],
-    },
-    role: {
-      type: String,
-      default: ROLE.USER,
-      enum: Object.values(ROLE),
     },
   },
   { timestamps: true }

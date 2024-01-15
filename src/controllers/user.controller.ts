@@ -7,14 +7,12 @@ export const createUser = expressAsyncHandler(
     // register the user
     const { username, email, password } = req.body;
     if (!username && !email && !password) {
-      res.status(403).json({ message: "All fields are required" });
-      return;
+      throw new Error("All fields are required");
     }
 
     const user = await User.findOne({ email });
     if (user) {
-      res.status(403).json({ message: "Email is already taken." });
-      return;
+      throw new Error("Email is already taken.");
     }
 
     await User.create({ username, email, password });
@@ -23,23 +21,26 @@ export const createUser = expressAsyncHandler(
 );
 
 export const updateUser = async (req: Request, res: Response) => {
-  const { userId, email, role } = req.user;
+  const { userId, email } = req.user;
 
   const { username, password } = req.body;
   if (!username && !password) {
-    res.status(403).json({ message: "All fields are required" });
-    return;
+    throw new Error("All fields are required");
   }
   const user = await User.findById(userId);
   if (!user) {
-    res.status(403).json({ message: "User does not exists." });
-    return;
+    throw new Error("User does not exists.");
   }
   user.username = username;
   user.password = password;
   const updatedUser = await user.save();
   res.status(200).json({ message: "user updated successfully" });
 };
-export const deleteUser = async (req: Request, res: Response) => {};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  const { userId, email } = req.user;
+  await User.findByIdAndDelete(userId);
+  res.status(201).json({ message: "user deleted successfully" });
+};
 
 export const userController = { createUser, updateUser, deleteUser };
