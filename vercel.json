@@ -8,7 +8,10 @@
                 "includeFiles": [
                     "dist/**"
                 ]
-            }
+            },
+            "regions": [
+                "bom1"
+            ]
         }
     ],
     "routes": [
